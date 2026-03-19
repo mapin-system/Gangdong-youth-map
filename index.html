@@ -1084,7 +1084,7 @@ function renderAboutReleaseNotes(){
       <div style="font-size:13px;color:var(--tx1);">${n.content}</div>
     </div>`;
 
-  const PREVIEW_COUNT = 3;
+  const PREVIEW_COUNT = 1;
   preview.innerHTML = releaseNotes.slice(0, PREVIEW_COUNT).map(makeItem).join('');
 
   if(releaseNotes.length > PREVIEW_COUNT){
