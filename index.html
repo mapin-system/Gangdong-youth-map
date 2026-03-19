@@ -247,26 +247,42 @@ button,input,select,a{font-family:inherit;}
 .cb-item.day input[type=checkbox]:checked + label{background:#EEF6FF;color:#1A56DB;border-color:#76A9FA;}
 .cb-item.target input[type=checkbox]:checked + label{background:#F0FDF4;color:#166534;border-color:#86EFAC;}
 
+/* ─── 데스크탑 인라인 필터 (모바일에서 숨김) ─── */
+.filter-drawer-desktop{display:none;}
+
 /* 데스크탑 */
 @media(min-width:768px){
-  :root{--top-h:60px;--tab-h:0px;--filter-btn-h:0px;}
+  :root{--top-h:60px;--tab-h:0px;--filter-btn-h:48px;}
   .top-tabs{display:none;}
-  .body-wrap{display:grid;grid-template-columns:320px 1fr;top:calc(var(--top-h) + var(--st));bottom:0;}
+  .body-wrap{
+    display:grid;
+    grid-template-columns:1fr 25%;
+    top:calc(var(--top-h) + var(--st));
+    bottom:calc(var(--filter-btn-h) + var(--sb));
+  }
   #map-view{display:block!important;height:100%;}
-  #list-view{display:flex!important;height:100%;border-right:1px solid var(--bdr);flex-direction:column;}
-  .filter-btn-bar{display:none;}
-  .filter-drawer{
-    position:static!important;
-    transform:none!important;
-    border-radius:0;
-    border-top:none;
-    border-bottom:1px solid var(--bdr);
-    box-shadow:none;
-    max-height:none;
-    overflow-y:auto;
+  #list-view{
+    display:flex!important;height:100%;
+    border-left:1px solid var(--bdr);
+    flex-direction:column;overflow:hidden;
+  }
+  /* 모바일 드로어는 데스크탑에서 숨김 */
+  .filter-drawer{display:none!important;}
+  /* 데스크탑 인라인 필터 표시 */
+  .filter-drawer-desktop{
+    display:block;
     flex-shrink:0;
+    border-bottom:1px solid var(--bdr);
+    overflow-y:auto;
+    max-height:45%;
   }
   .drawer-handle{display:none;}
+  /* 필터 버튼바는 하단에 유지 */
+  .filter-btn-bar{
+    display:flex;
+    bottom:0;
+    height:calc(var(--filter-btn-h) + var(--sb));
+  }
   .modal-overlay{align-items:center;}
   .modal{border-radius:18px;max-width:640px;margin:auto;max-height:85vh;}
   .modal-handle{display:none;}
@@ -310,9 +326,8 @@ button,input,select,a{font-family:inherit;}
   </div>
   <!-- 목록 뷰 -->
   <div id="list-view">
-    <!-- 필터 드로어 (데스크탑에서 목록 상단에 인라인 표시) -->
-    <div class="filter-drawer" id="filter-drawer">
-      <div class="drawer-handle"></div>
+    <!-- 데스크탑에서만 보이는 인라인 필터 -->
+    <div class="filter-drawer-desktop" id="filter-drawer-desktop">
       <div class="drawer-inner">
         <div class="filter-group">
           <div class="fgroup-label">시설 유형</div>
@@ -366,6 +381,61 @@ button,input,select,a{font-family:inherit;}
     </div>
     <div class="result-bar" id="result-bar">시설 0개 표시 중</div>
     <div class="card-list" id="card-list"></div>
+  </div>
+</div>
+
+<!-- 모바일 전역 필터 드로어 -->
+<div class="filter-drawer" id="filter-drawer">
+  <div class="drawer-handle"></div>
+  <div class="drawer-inner">
+    <div class="filter-group">
+      <div class="fgroup-label">시설 유형</div>
+      <div class="chips">
+        <button class="chip a-act" data-f="type" data-v="all-type" onclick="setFilter('type','all-type')">전체</button>
+        <button class="chip" data-f="type" data-v="청소년활동" onclick="setFilter('type','청소년활동')">청소년활동</button>
+        <button class="chip" data-f="type" data-v="상담및복지" onclick="setFilter('type','상담및복지')">상담·복지</button>
+        <button class="chip" data-f="type" data-v="기타" onclick="setFilter('type','기타')">기타</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="fgroup-label">지역 (행정동)</div>
+      <div class="chips">
+        <button class="chip a-on" data-f="region" data-v="all-region" onclick="setFilter('region','all-region')">전체</button>
+        <button class="chip" data-f="region" data-v="강일동" onclick="setFilter('region','강일동')">강일동</button>
+        <button class="chip" data-f="region" data-v="고덕동" onclick="setFilter('region','고덕동')">고덕동</button>
+        <button class="chip" data-f="region" data-v="길동" onclick="setFilter('region','길동')">길동</button>
+        <button class="chip" data-f="region" data-v="둔촌동" onclick="setFilter('region','둔촌동')">둔촌동</button>
+        <button class="chip" data-f="region" data-v="명일동" onclick="setFilter('region','명일동')">명일동</button>
+        <button class="chip" data-f="region" data-v="상일동" onclick="setFilter('region','상일동')">상일동</button>
+        <button class="chip" data-f="region" data-v="성내동" onclick="setFilter('region','성내동')">성내동</button>
+        <button class="chip" data-f="region" data-v="암사동" onclick="setFilter('region','암사동')">암사동</button>
+        <button class="chip" data-f="region" data-v="천호동" onclick="setFilter('region','천호동')">천호동</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="fgroup-label">운영요일</div>
+      <div class="chips">
+        <button class="chip a-on" data-f="day" data-v="all-day" onclick="setFilter('day','all-day')">전체</button>
+        <button class="chip" data-f="day" data-v="월" onclick="setFilter('day','월')">월</button>
+        <button class="chip" data-f="day" data-v="화" onclick="setFilter('day','화')">화</button>
+        <button class="chip" data-f="day" data-v="수" onclick="setFilter('day','수')">수</button>
+        <button class="chip" data-f="day" data-v="목" onclick="setFilter('day','목')">목</button>
+        <button class="chip" data-f="day" data-v="금" onclick="setFilter('day','금')">금</button>
+        <button class="chip" data-f="day" data-v="토" onclick="setFilter('day','토')">토</button>
+        <button class="chip" data-f="day" data-v="일" onclick="setFilter('day','일')">일</button>
+      </div>
+    </div>
+    <div class="filter-group">
+      <div class="fgroup-label">이용대상</div>
+      <div class="chips">
+        <button class="chip a-on" data-f="target" data-v="all-target" onclick="setFilter('target','all-target')">전체</button>
+        <button class="chip" data-f="target" data-v="초" onclick="setFilter('target','초')">초등학생</button>
+        <button class="chip" data-f="target" data-v="중" onclick="setFilter('target','중')">중학생</button>
+        <button class="chip" data-f="target" data-v="고" onclick="setFilter('target','고')">고등학생</button>
+        <button class="chip" data-f="target" data-v="후기청소년" onclick="setFilter('target','후기청소년')">후기청소년</button>
+        <button class="chip" data-f="target" data-v="학교밖청소년" onclick="setFilter('target','학교밖청소년')">학교밖청소년</button>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -819,7 +889,8 @@ function showForm(pf){
       <div class="form-field"><label class="form-lbl">경도 *</label><input class="form-inp" id="flng" type="number" step="0.0001" value="${f.lng}"/></div>
     </div>
     <div style="background:#FFF8E1;border:1px solid #FFE082;border-radius:8px;padding:9px 12px;margin-bottom:12px;font-size:12px;color:#795548;line-height:1.7;">
-      💡 네이버지도 URL의 @37.xxxx,127.xxxx에서 좌표를 복사하세요
+      💡 <strong>좌표 찾는 방법:</strong> 카카오맵(map.kakao.com)에서 기관 검색 → 해당 위치 우클릭 → "이 위치 공유" → URL에서 숫자 확인<br>
+      또는 카카오맵 앱에서 기관 검색 → 지도에서 위치 길게 누르기 → 좌표 확인
     </div>
     <div style="display:flex;gap:8px;">
       <button class="btn-submit" onclick="submitF()">${editingIdx!==null?'수정 완료':'추가하기'}</button>
