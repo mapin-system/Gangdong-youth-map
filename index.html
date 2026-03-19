@@ -676,13 +676,13 @@ function showOverlay(f){
       <div class="overlay-name">${f.name}</div>
       <div class="overlay-desc">${f.desc}</div>
       <div class="overlay-row"><span class="overlay-lbl">주소</span><span class="overlay-val">${f.address}</span></div>
-      ${f.phone?`<div class="overlay-row"><span class="overlay-lbl">연락처</span><a class="overlay-val overlay-tel" href="tel:${f.phone}">${f.phone}</a></div>`:''}
-      ${f.website?`<div class="overlay-row"><span class="overlay-lbl">공식링크</span><a class="overlay-val overlay-link" href="${f.website}" target="_blank">${f.website}</a></div>`:''}
+      ${f.phone?`<div class="overlay-row"><span class="overlay-lbl">연락처</span><a class="overlay-val overlay-tel" href="tel:${f.phone}" onclick="window.location.href='tel:${f.phone}';return false;">${f.phone}</a></div>`:''}
+      ${f.website?`<div class="overlay-row"><span class="overlay-lbl">공식링크</span><a class="overlay-val overlay-link" href="${f.website}" onclick="window.open('${f.website}','_blank');return false;">${f.website}</a></div>`:''}
       <div class="overlay-row"><span class="overlay-lbl">운영요일</span><div class="overlay-days">${f.days.map(d=>`<span class="overlay-day">${d}</span>`).join('')}</div></div>
       <div class="overlay-row"><span class="overlay-lbl">이용대상</span><div class="overlay-days">${tgt.map(t=>`<span class="overlay-target">${t}</span>`).join('')}</div></div>
       <div class="overlay-btns">
-        <a class="overlay-btn-kakao" href="${kakaoMapUrl(f)}" target="_blank">카카오맵에서 보기</a>
-        <button class="overlay-btn-list" onclick="goToList(${f.id})">목록보기</button>
+        <a class="overlay-btn-kakao" href="${kakaoMapUrl(f)}" onclick="window.open('${kakaoMapUrl(f)}','_blank');return false;">카카오맵에서 보기</a>
+        <button class="overlay-btn-list" onclick="closeOverlay();goToList(${f.id})">목록보기</button>
       </div>
     </div>`;
   currentOverlay=new kakao.maps.CustomOverlay({
