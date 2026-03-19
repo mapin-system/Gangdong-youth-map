@@ -581,6 +581,7 @@ function initMap(){
 function kakaoMapUrl(f){
   return `https://map.kakao.com/link/map/${encodeURIComponent(f.name)},${f.lat},${f.lng}`;
 }
+function getCol(type){
   if(type==='청소년활동')return{color:'#2D6BE4',badge:'ta'};
   if(type==='상담및복지')return{color:'#16A97B',badge:'tw'};
   return{color:'#E8820C',badge:'to'};
