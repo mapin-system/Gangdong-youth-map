@@ -670,7 +670,7 @@ function initMap(){
   const container=document.getElementById('map');
   const options={
     center: new kakao.maps.LatLng(37.5450, 127.1400),
-    level: 6
+    level: 7
   };
   kakaoMap=new kakao.maps.Map(container, options);
 
@@ -841,9 +841,10 @@ function renderMarkers(list){
 
     } else {
       // 단일 핀 (visGroup이 1개이거나 0개)
-      const f=group[0];
-      const isV=vis.has(f.id);
-      const col=getCol(f.type);
+      // 필터로 하나만 보일 때도 올바른 시설 기준으로 색상/클릭 처리
+      const f = visGroup.length > 0 ? visGroup[0] : group[0];
+      const isV = visGroup.length > 0;
+      const col = getCol(f.type);
       markerEl.style.cssText=`
         width:36px;height:36px;
         background:${col.color};
@@ -855,12 +856,10 @@ function renderMarkers(list){
         cursor:${isV?'pointer':'default'};
       `;
       if(isV){
-        // visGroup에서 실제 표시할 시설 찾기 (필터로 하나만 보일 때)
-        const target=visGroup.length>0?visGroup[0]:f;
         markerEl.addEventListener('click',(e)=>{
           e.stopPropagation();
-          highlightCard(target.id);
-          showSheet(target);
+          highlightCard(f.id);
+          showSheet(f);
           closeDrawer();
         });
       }
