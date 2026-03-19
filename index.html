@@ -559,8 +559,8 @@ button,input,select,a{font-family:inherit;}
 // ==================== 데이터 ====================
 let facilities=[
   {id:1,name:"강동구립 둔촌청소년문화의집",type:"청소년활동",address:"서울특별시 강동구 진황도로61길 25-23, 1층",region:"둔촌동",days:["화","수","목","금","토","일"],targets:["초","중","고","후기청소년","학교밖청소년"],desc:"당찬 청소년들의 공간, 당찬 둔촌청소년문화의집",phone:"02-6953-0931",website:"https://dcyouth.or.kr",lat:37.5294496309675,lng:127.144718797108},
-  {id:2,name:"강동구립 천호청소년문화의집",type:"청소년활동",address:"서울특별시 강동구 천중로 61",region:"천호동",days:["화","수","목","금","토","일"],targets:["초","중","고","후기청소년","학교밖청소년"],desc:"청소년, 지속 가능한 미래를 열다",phone:"02-2039-0913",website:"https://chyouth.or.kr",lat:37.5452090350281,lng:127.128834178145},
-  {id:3,name:"시립강동청소년센터",type:"청소년활동",address:"서울특별시 강동구 아리수로93길 47",region:"강일동",days:["월","화","수","목","금","토","일"],targets:["초","중","고","후기청소년","학교밖청소년"],desc:"너랑 나랑, 우리끼리 와글 WAGLE",phone:"02-6252-1300",website:"https://wagle.or.kr",lat:37.5664776017967,lng:127.173029251627},
+  {id:2,name:"강동구립 천호청소년문화의집",type:"청소년활동",address:"서울특별시 강동구 천중로 61",region:"천호동",days:["화","수","목","금","토","일"],targets:["초","중","고","후기청소년","학교밖청소년"],desc:"청소년, 지속 가능한 미래를 열다",phone:"02-2039-0913",website:"http://www.chyouth.or.kr",lat:37.5452090350281,lng:127.128834178145},
+  {id:3,name:"시립강동청소년센터",type:"청소년활동",address:"서울특별시 강동구 아리수로93길 47",region:"강일동",days:["월","화","수","목","금","토","일"],targets:["초","중","고","후기청소년","학교밖청소년"],desc:"너랑 나랑, 우리끼리 와글 WAGLE",phone:"02-6252-1300",website:"http://www.wagle.or.kr",lat:37.5664776017967,lng:127.173029251627},
   {id:4,name:"강동구청소년상담복지센터",type:"상담및복지",address:"서울특별시 강동구 아리수로93길 47, 2층",region:"강일동",days:["월","화","수","목","금"],targets:["초","중","고","후기청소년","학교밖청소년"],desc:"청소년안전망",phone:"02-6252-1388",website:"https://gangdong1388.or.kr",lat:37.5664776017967,lng:127.173029251627},
   {id:5,name:"강동구아동청소년미래본부",type:"청소년활동",address:"서울특별시 강동구 성내동 13, 1층",region:"성내동",days:["화","수","목","금","토"],targets:["초","중","고"],desc:"강동구아동청소년미래본부",phone:"02-470-4415",website:"",lat:37.5304,lng:127.1225},
   {id:6,name:"강동중앙도서관",type:"기타",address:"서울특별시 강동구 양재대로84길 63",region:"둔촌동",days:["화","수","목","금","토","일"],targets:["초","중","고","후기청소년","학교밖청소년"],desc:"강동중앙도서관-강동구립도서관",phone:"02-470-0423",website:"https://gdlibrary.or.kr",lat:37.5243505597151,lng:127.136965792517},
@@ -715,7 +715,7 @@ function showSheet(f){
     <div class="sheet-desc">${f.desc}</div>
     <div class="sheet-row"><span class="sheet-lbl">주소</span><span class="sheet-val">${f.address}</span></div>
     ${f.phone?`<div class="sheet-row"><span class="sheet-lbl">연락처</span><a class="sheet-tel" href="tel:${f.phone}">${f.phone}</a></div>`:''}
-    ${f.website?`<div class="sheet-row"><span class="sheet-lbl">공식링크</span><a class="sheet-link" href="${f.website}" target="_blank">${f.website}</a></div>`:''}
+    ${f.website?`<div class="sheet-row"><span class="sheet-lbl">공식링크</span><a class="sheet-link" href="javascript:void(0)" onclick="window.open('${f.website}','_blank')">${f.website}</a></div>`:''}
     <div class="sheet-row"><span class="sheet-lbl">운영요일</span><div class="sheet-days">${f.days.map(d=>`<span class="sheet-day">${d}</span>`).join('')}</div></div>
     <div class="sheet-row"><span class="sheet-lbl">이용대상</span><div class="sheet-days">${tgt.map(t=>`<span class="sheet-target">${t}</span>`).join('')}</div></div>
     <div class="sheet-btns">
@@ -771,7 +771,7 @@ function renderCards(list){
       <div class="card-info">
         <div class="card-info-row">📍 ${f.address}</div>
         ${f.phone?`<div class="card-info-row">📞 <a href="tel:${f.phone}" onclick="event.stopPropagation()" class="card-tel">${f.phone}</a></div>`:''}
-        ${f.website?`<div class="card-info-row">🔗 <a href="${f.website}" target="_blank" onclick="event.stopPropagation()" class="card-web">${f.website}</a></div>`:''}
+        ${f.website?`<div class="card-info-row">🔗 <a href="javascript:void(0)" onclick="window.open('${f.website}','_blank');event.stopPropagation()" class="card-web">${f.website}</a></div>`:''}
       </div>
       <div class="card-tags">
         <div class="card-tag-row"><span class="ctag-label">운영요일</span>${f.days.map(d=>`<span class="ctag-day">${d}</span>`).join('')}</div>
@@ -917,7 +917,7 @@ function showMultiSheet(f){
     <div class="sheet-desc">${f.desc}</div>
     <div class="sheet-row"><span class="sheet-lbl">주소</span><span class="sheet-val">${f.address}</span></div>
     ${f.phone?`<div class="sheet-row"><span class="sheet-lbl">연락처</span><a class="sheet-tel" href="tel:${f.phone}">${f.phone}</a></div>`:''}
-    ${f.website?`<div class="sheet-row"><span class="sheet-lbl">공식링크</span><a class="sheet-link" href="${f.website}" target="_blank">${f.website}</a></div>`:''}
+    ${f.website?`<div class="sheet-row"><span class="sheet-lbl">공식링크</span><a class="sheet-link" href="javascript:void(0)" onclick="window.open('${f.website}','_blank')">${f.website}</a></div>`:''}
     <div class="sheet-row"><span class="sheet-lbl">운영요일</span><div class="sheet-days">${f.days.map(d=>`<span class="sheet-day">${d}</span>`).join('')}</div></div>
     <div class="sheet-row"><span class="sheet-lbl">이용대상</span><div class="sheet-days">${tgt.map(t=>`<span class="sheet-target">${t}</span>`).join('')}</div></div>
     <div class="sheet-btns">
