@@ -523,7 +523,7 @@ button,input,select,a{font-family:inherit;}
 <script>
 // ==================== 데이터 ====================
 let facilities=[
-  {id:1,name:"강동구립 둔촌청소년문화의집",type:"청소년활동",address:"서울특별시 강동구 진황도로61길 25-23, 1층",region:"둔촌동",days:["화","수","목","금","토","일"],targets:["초","중","고","대","후기청소년","학교밖청소년"],desc:"당찬 청소년들의 공간, 당찬 둔촌청소년문화의집",phone:"02-6953-0931",website:"https://dcyouth.or.kr",naver:"https://naver.me/GxFx1",lat:37.5218,lng:127.1355},
+  {id:1,name:"강동구립 둔촌청소년문화의집",type:"청소년활동",address:"서울특별시 강동구 진황도로61길 25-23, 1층",region:"둔촌동",days:["화","수","목","금","토","일"],targets:["초","중","고","대","후기청소년","학교밖청소년"],desc:"당찬 청소년들의 공간, 당찬 둔촌청소년문화의집",phone:"02-6953-0931",website:"https://dcyouth.or.kr",lat:37.5294496309675,lng:127.144718797108},
   {id:2,name:"강동구립 강일청소년문화의집",type:"청소년활동",address:"서울특별시 강동구 강일동 상암로 75",region:"강일동",days:["월","화","수","목","금","토"],targets:["초","중","고"],desc:"강일동 청소년들의 꿈을 키우는 공간",phone:"02-000-0002",website:"",naver:"https://naver.me/GxFx2",lat:37.5650,lng:127.1720},
   {id:3,name:"강동구 청소년상담복지센터",type:"상담및복지",address:"서울특별시 강동구 천중로 46, 5층",region:"천호동",days:["월","화","수","목","금"],targets:["초","중","고","대","후기청소년","학교밖청소년"],desc:"청소년 고민, 언제든지 함께 해결해요",phone:"02-000-0003",website:"",naver:"https://naver.me/GxFx3",lat:37.5385,lng:127.1234},
   {id:4,name:"강동구청소년수련관",type:"청소년활동",address:"서울특별시 강동구 상암로 181",region:"명일동",days:["월","화","수","목","금","토","일"],targets:["초","중","고"],desc:"다양한 청소년 수련 활동의 중심 공간",phone:"02-000-0004",website:"",naver:"https://naver.me/GxFx4",lat:37.5500,lng:127.1470},
@@ -649,6 +649,7 @@ function initMap(){
 
 // ==================== 오버레이 ====================
 function kakaoMapUrl(f){
+  // 좌표 기반으로 카카오맵 연결 - 정확한 위치 표시
   return `https://map.kakao.com/link/map/${encodeURIComponent(f.name)},${f.lat},${f.lng}`;
 }
 function getCol(type){
@@ -745,7 +746,7 @@ function renderCards(list){
       </div>
       <div class="card-foot">
         <span class="card-reg">📍 ${f.region}</span>
-        <a class="kakao-map-btn" href="${kakaoMapUrl(f)}" target="_blank" onclick="event.stopPropagation()">카카오맵</a>
+        <a class="kakao-map-btn" href="${kakaoMapUrl(f)}" target="_blank" onclick="event.stopPropagation()">카카오맵에서 보기</a>
       </div>
     </div>`;
   }).join('');
