@@ -607,6 +607,15 @@ button,input,select,a{font-family:inherit;}
 const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxHuIw12iTKTRtKQphBDsshM4Y181z1K3JX9AC8OcbiDU58HJ3acSK2f1tZT5FX_nkC/exec';
 const CACHE_KEY = 'gd_facilities_cache';
 const CACHE_TS_KEY = 'gd_facilities_ts';
+const CACHE_VER_KEY = 'gd_cache_ver';
+const CACHE_VER = '20260320'; // 코드 업데이트 시 이 값을 바꾸면 캐시 자동 초기화
+
+// 캐시 버전 체크 - 버전 다르면 캐시 삭제
+if(localStorage.getItem(CACHE_VER_KEY) !== CACHE_VER){
+  localStorage.removeItem(CACHE_KEY);
+  localStorage.removeItem(CACHE_TS_KEY);
+  localStorage.setItem(CACHE_VER_KEY, CACHE_VER);
+}
 
 // ==================== 데이터 ====================
 let facilities = [];
@@ -707,7 +716,10 @@ function parseSheetRow(row){
     website: (()=>{
       let w = row['공식링크'] || row['website'] || '';
       w = String(w).trim();
-      if(w && !w.startsWith('http')) w = 'https://' + w;
+      // 빈값, 숫자(0), 'undefined', 'null' 제거
+      if(!w || w==='0' || w==='undefined' || w==='null') return '';
+      // http:// 또는 https:// 없으면 자동 추가
+      if(!w.startsWith('http://') && !w.startsWith('https://')) w = 'https://' + w;
       return w;
     })(),
     lat:     parseFloat(row['위도(lat)'] ?? row['lat']) || 0,
