@@ -608,7 +608,7 @@ const SHEET_URL = 'https://script.google.com/macros/s/AKfycbxHuIw12iTKTRtKQphBDs
 const CACHE_KEY = 'gd_facilities_cache';
 const CACHE_TS_KEY = 'gd_facilities_ts';
 const CACHE_VER_KEY = 'gd_cache_ver';
-const CACHE_VER = '20260321'; // 코드 업데이트 시 이 값을 바꾸면 캐시 자동 초기화
+const CACHE_VER = '20260322'; // 코드 업데이트 시 이 값을 바꾸면 캐시 자동 초기화
 
 // 캐시 버전 체크 - 버전 다르면 캐시 삭제
 if(localStorage.getItem(CACHE_VER_KEY) !== CACHE_VER){
@@ -1698,7 +1698,14 @@ function openWebsite(id){
   let url = String(f.website || '').trim();
   if(!url || url==='0' || url==='undefined' || url==='null') return;
   if(!url.startsWith('http://') && !url.startsWith('https://')) url = 'https://' + url;
-  window.open(url, '_blank');
+  // window.open 대신 a태그 직접 생성 → 모바일 팝업 차단 우회
+  const a = document.createElement('a');
+  a.href = url;
+  a.target = '_blank';
+  a.rel = 'noopener noreferrer';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
 }
 
 // ==================== 외부 링크 이벤트 위임 ====================
