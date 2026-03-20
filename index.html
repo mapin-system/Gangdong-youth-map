@@ -641,9 +641,12 @@ function loadFacilitiesFromSheet(forceRefresh=false){
   if(!forceRefresh && cached && cachedTs){
     try {
       facilities = JSON.parse(cached);
+      // 캐시된 공지도 복원
+      noticeText = localStorage.getItem('gd_notice_cache') || '';
+      renderNoticeBanner();
       facilitiesLoaded = true;
       renderAll();
-      return; // 캐시 사용 → 즉시 표시, 네트워크 요청 없음
+      return;
     } catch(e){ /* 캐시 파싱 오류 시 서버에서 다시 로드 */ }
   }
 
@@ -656,9 +659,15 @@ function loadFacilitiesFromSheet(forceRefresh=false){
       facilities = res.data
         .filter(row => row['시설명'] || row['name'])
         .map(row => parseSheetRow(row));
+      // 공지 업데이트
+      if(res.notice !== undefined){
+        noticeText = res.notice || '';
+        renderNoticeBanner();
+      }
       // 캐시 저장
       localStorage.setItem(CACHE_KEY, JSON.stringify(facilities));
       localStorage.setItem(CACHE_TS_KEY, new Date().toISOString());
+      if(res.notice !== undefined) localStorage.setItem('gd_notice_cache', noticeText);
       facilitiesLoaded = true;
       hideLoadingOverlay();
       renderAll();
@@ -768,6 +777,15 @@ function adminRefreshSheet(){
       facilities = res.data
         .filter(row => row['시설명'] || row['name'])
         .map(row => parseSheetRow(row));
+      // 공지 업데이트
+      if(res.notice !== undefined){
+        noticeText = res.notice || '';
+        localStorage.setItem('gd_notice_cache', noticeText);
+        renderNoticeBanner();
+        // 관리자 입력창도 업데이트
+        const inp = document.getElementById('notice-input');
+        if(inp) inp.value = noticeText;
+      }
       localStorage.setItem(CACHE_KEY, JSON.stringify(facilities));
       const ts = new Date();
       const tsStr = `${ts.getFullYear()}.${String(ts.getMonth()+1).padStart(2,'0')}.${String(ts.getDate()).padStart(2,'0')} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}`;
@@ -1048,13 +1066,13 @@ function showShareToast(msg){
   clearTimeout(toast._t);
   toast._t = setTimeout(()=>{ toast.style.opacity='0'; }, 2000);
 }
-let noticeText = localStorage.getItem('gd_notice') || '';
+let noticeText = '';
 
 function renderNoticeBanner(){
   const bar = document.getElementById('notice-bar');
   const txt = document.getElementById('notice-bar-text');
-  if(noticeText){
-    txt.textContent = '📢 ' + noticeText;
+  if(noticeText && noticeText.trim()){
+    txt.innerHTML = '<span style="font-size:14px;">📢</span> ' + noticeText.trim();
     bar.className = 'notice-bar on';
   } else {
     bar.className = 'notice-bar';
@@ -1566,22 +1584,39 @@ function checkWebLink(){
 function goFacilityPage(p){ facilityPage=p; renderTable(); }
 function goReleasePage(p){ releasePage=p; renderTable(); }
 
-// ==================== 공지 관리 ====================
+// ==================== 공지 관리 (구글 시트 연동) ====================
 function saveNotice(){
   const val = document.getElementById('notice-input').value.trim();
-  noticeText = val;
-  localStorage.setItem('gd_notice', val);
-  renderNoticeBanner();
-  alert(val ? `공지가 저장되었어요!\n"${val}"` : '공지가 삭제되었어요!');
+  const btn = document.querySelector('[onclick="saveNotice()"]');
+  if(btn){ btn.disabled=true; btn.textContent='저장 중...'; }
+
+  sheetPost({action:'saveNotice', notice: val})
+    .then(res => {
+      if(res.status !== 'ok') throw new Error();
+      noticeText = val;
+      renderNoticeBanner();
+      if(btn){ btn.disabled=false; btn.textContent='저장'; }
+      alert(val ? `공지가 저장되었어요!\n"${val}"` : '공지가 삭제되었어요!');
+    })
+    .catch(()=>{
+      if(btn){ btn.disabled=false; btn.textContent='저장'; }
+      alert('저장 실패. 인터넷 연결을 확인해주세요.');
+    });
 }
+
 function clearNotice(){
   if(!confirm('공지를 삭제할까요?')) return;
-  noticeText = '';
-  localStorage.setItem('gd_notice', '');
   const inp = document.getElementById('notice-input');
   if(inp) inp.value = '';
-  renderNoticeBanner();
-  alert('공지가 삭제되었어요!');
+
+  sheetPost({action:'saveNotice', notice: ''})
+    .then(res => {
+      if(res.status !== 'ok') throw new Error();
+      noticeText = '';
+      renderNoticeBanner();
+      alert('공지가 삭제되었어요!');
+    })
+    .catch(()=>{ alert('삭제 실패. 인터넷 연결을 확인해주세요.'); });
 }
 
 function renderReleaseListPage(items, startIdx){
