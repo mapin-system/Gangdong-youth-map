@@ -633,43 +633,50 @@ function loadFacilitiesFromSheet(){
 }
 
 function parseSheetRow(row){
-  const DAY_MAP  = ['월','화','수','목','금','토','일'];
-  const TGT_MAP  = ['초','중','고','후기청소년','학교밖청소년'];
-  const TGT_KEYS = ['초','중','고','후기청소년','학교밖청소년'];
+  // 구글 시트 헤더: ID, 시설명, 유형, 주소, 지역, 운영요일, (빈칸들), 이용대상, 한줄소개, 연락처, 공식링크, 위도(lat), 경도(lng)
+  // 요일/이용대상은 현재 시트에서 단일 컬럼으로 처리됨 → 쉼표 구분 문자열 또는 O값으로 파싱
 
-  // 요일: 시트에 O로 표시된 열 또는 쉼표 구분 문자열 모두 지원
+  // 요일 파싱 - "운영요일" 키에서 쉼표 구분 또는 개별 키에서 O 체크
   let days = [];
-  if(row['월'] !== undefined){
-    DAY_MAP.forEach(d => { if(row[d]==='O'||row[d]===true) days.push(d); });
-  } else if(row.days){
-    days = String(row.days).split(',').map(s=>s.trim()).filter(Boolean);
+  const DAY_MAP = ['월','화','수','목','금','토','일'];
+
+  // 개별 요일 키가 있는 경우 (월,화,수... 각 컬럼)
+  const hasIndivDay = DAY_MAP.some(d => row[d] !== undefined);
+  if(hasIndivDay){
+    DAY_MAP.forEach(d => { if(row[d]==='O' || row[d]===true) days.push(d); });
+  } else if(row['운영요일']){
+    // "운영요일" 단일 컬럼에 쉼표 구분
+    days = String(row['운영요일']).split(',').map(s=>s.trim()).filter(Boolean);
   }
 
-  // 이용대상
+  // 이용대상 파싱
   let targets = [];
-  const tgtColMap = {'초':'초','중':'중','고':'고','후기청소년':'후기청소년','학교밖청소년':'학교밖청소년'};
-  let hasTgtCols = Object.keys(tgtColMap).some(k => row[k] !== undefined);
-  if(hasTgtCols){
-    Object.entries(tgtColMap).forEach(([col, val]) => {
-      if(row[col]==='O'||row[col]===true) targets.push(val);
+  const TGT_MAP = ['초등학생','중학생','고등학생','후기청소년','학교밖청소년'];
+  const TGT_SHORT = {'초등학생':'초','중학생':'중','고등학생':'고','후기청소년':'후기청소년','학교밖청소년':'학교밖청소년'};
+  const TGT_KEYS_ALT = ['초','중','고','후기청소년','학교밖청소년'];
+
+  const hasIndivTgt = TGT_MAP.some(t => row[t] !== undefined) || TGT_KEYS_ALT.some(t => row[t] !== undefined);
+  if(hasIndivTgt){
+    [...TGT_MAP, ...TGT_KEYS_ALT].forEach(t => {
+      if((row[t]==='O' || row[t]===true) && !targets.includes(t)) targets.push(t);
     });
-  } else if(row.targets){
-    targets = String(row.targets).split(',').map(s=>s.trim()).filter(Boolean);
+  } else if(row['이용대상']){
+    targets = String(row['이용대상']).split(',').map(s=>s.trim()).filter(Boolean);
   }
 
   return {
-    id:      row.id,
-    name:    row.name    || '',
-    type:    row.type    || '기타',
-    address: row.address || '',
-    region:  row.region  || '',
+    id:      row['ID']       || row['id']      || '',
+    name:    row['시설명']   || row['name']     || '',
+    type:    row['유형']     || row['type']     || '기타',
+    address: row['주소']     || row['address']  || '',
+    region:  row['지역']     || row['region']   || '',
     days,
     targets,
-    desc:    row.desc    || '',
-    phone:   row.phone   || '',
-    website: row.website || '',
-    lat:     parseFloat(row.lat) || 0,
-    lng:     parseFloat(row.lng) || 0,
+    desc:    row['한줄소개'] || row['desc']     || '',
+    phone:   row['연락처']   || row['phone']    || '',
+    website: row['공식링크'] || row['website']  || '',
+    lat:     parseFloat(row['위도(lat)'] || row['lat']) || 0,
+    lng:     parseFloat(row['경도(lng)'] || row['lng']) || 0,
   };
 }
 
