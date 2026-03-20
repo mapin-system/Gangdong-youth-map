@@ -704,7 +704,12 @@ function parseSheetRow(row){
     targets,
     desc:    row['한줄소개']  || row['desc']     || '',
     phone:   String(row['연락처']  || row['phone']    || ''),
-    website: row['공식링크']  || row['website']  || '',
+    website: (()=>{
+      let w = row['공식링크'] || row['website'] || '';
+      w = String(w).trim();
+      if(w && !w.startsWith('http')) w = 'https://' + w;
+      return w;
+    })(),
     lat:     parseFloat(row['위도(lat)'] ?? row['lat']) || 0,
     lng:     parseFloat(row['경도(lng)'] ?? row['lng']) || 0,
   };
@@ -969,7 +974,7 @@ function showSheet(f){
     <div class="sheet-desc">${f.desc}</div>
     <div class="sheet-row"><span class="sheet-lbl">주소</span><span class="sheet-val">${f.address}</span></div>
     ${f.phone?`<div class="sheet-row"><span class="sheet-lbl">연락처</span><a class="sheet-tel" href="tel:${f.phone}">${f.phone}</a></div>`:''}
-    ${f.website?`<div class="sheet-row"><span class="sheet-lbl">공식링크</span><a class="sheet-link" href="javascript:void(0)" onclick="window.open('${f.website}','_blank')">${f.website}</a></div>`:''}
+    ${f.website?`<div class="sheet-row"><span class="sheet-lbl">공식링크</span><a class="sheet-link ext-link" data-href="${f.website}" href="javascript:void(0)">${f.website}</a></div>`:''}
     <div class="sheet-row"><span class="sheet-lbl">운영요일</span><div class="sheet-days">${f.days.map(d=>`<span class="sheet-day">${d}</span>`).join('')}</div></div>
     <div class="sheet-row"><span class="sheet-lbl">이용대상</span><div class="sheet-days">${tgt.map(t=>`<span class="sheet-target">${t}</span>`).join('')}</div></div>
     <div class="sheet-btns">
@@ -1043,7 +1048,7 @@ function renderCards(list){
       <div class="card-info">
         <div class="card-info-row">📍 ${f.address}</div>
         ${f.phone?`<div class="card-info-row">📞 <a href="tel:${f.phone}" onclick="event.stopPropagation()" class="card-tel">${f.phone}</a></div>`:''}
-        ${f.website?`<div class="card-info-row">🔗 <a href="javascript:void(0)" onclick="window.open('${f.website}','_blank');event.stopPropagation()" class="card-web">${f.website}</a></div>`:''}
+        ${f.website?`<div class="card-info-row">🔗 <a class="card-web ext-link" data-href="${f.website}" href="javascript:void(0)" onclick="event.stopPropagation()">${f.website}</a></div>`:''}
       </div>
       <div class="card-tags">
         <div class="card-tag-row"><span class="ctag-label">운영요일</span>${f.days.map(d=>`<span class="ctag-day">${d}</span>`).join('')}</div>
@@ -1189,7 +1194,7 @@ function showMultiSheet(f){
     <div class="sheet-desc">${f.desc}</div>
     <div class="sheet-row"><span class="sheet-lbl">주소</span><span class="sheet-val">${f.address}</span></div>
     ${f.phone?`<div class="sheet-row"><span class="sheet-lbl">연락처</span><a class="sheet-tel" href="tel:${f.phone}">${f.phone}</a></div>`:''}
-    ${f.website?`<div class="sheet-row"><span class="sheet-lbl">공식링크</span><a class="sheet-link" href="javascript:void(0)" onclick="window.open('${f.website}','_blank')">${f.website}</a></div>`:''}
+    ${f.website?`<div class="sheet-row"><span class="sheet-lbl">공식링크</span><a class="sheet-link ext-link" data-href="${f.website}" href="javascript:void(0)">${f.website}</a></div>`:''}
     <div class="sheet-row"><span class="sheet-lbl">운영요일</span><div class="sheet-days">${f.days.map(d=>`<span class="sheet-day">${d}</span>`).join('')}</div></div>
     <div class="sheet-row"><span class="sheet-lbl">이용대상</span><div class="sheet-days">${tgt.map(t=>`<span class="sheet-target">${t}</span>`).join('')}</div></div>
     <div class="sheet-btns">
@@ -1664,6 +1669,16 @@ function addrToCoord(){
     }
   });
 }
+
+// ==================== 외부 링크 이벤트 위임 ====================
+document.addEventListener('click', function(e){
+  const a = e.target.closest('.ext-link');
+  if(!a) return;
+  e.preventDefault();
+  e.stopPropagation();
+  const href = a.getAttribute('data-href');
+  if(href) window.open(href, '_blank');
+});
 
 window.addEventListener('load', ()=>{
   kakao.maps.load(()=>{
