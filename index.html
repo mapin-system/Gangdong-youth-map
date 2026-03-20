@@ -1387,7 +1387,11 @@ function openAbout(){
   document.getElementById('about-modal').classList.add('show');
   renderAboutReleaseNotes();
 }
-function closeAbout(){document.getElementById('about-modal').classList.remove('show');}
+function closeAbout(){
+  document.getElementById('about-modal').classList.remove('show');
+  // 소개를 닫으면 방문 기록 저장 (다음 방문부터 자동 오픈 안 함)
+  localStorage.setItem('gd_visited', '1');
+}
 
 // ==================== 관리자 ====================
 function openAdmin(){document.getElementById('admin-modal').classList.add('show');if(!adminUnlocked)renderPw();else renderTable();}
@@ -1737,6 +1741,10 @@ window.addEventListener('load', ()=>{
     initMap();
     loadFacilitiesFromSheet();
   });
+  // 첫 방문자 → 소개 모달 자동 오픈
+  if(!localStorage.getItem('gd_visited')){
+    setTimeout(()=>openAbout(), 800); // 지도 로딩 후 자연스럽게 표시
+  }
 });
 </script>
 </body>
