@@ -645,10 +645,10 @@ let kakaoMap, markers=[], currentOverlay=null;
 
 // ==================== 캐시 기반 로드 ====================
 function loadFacilitiesFromSheet(forceRefresh=false){
-  // 캐시 확인
-  const cached = localStorage.getItem(CACHE_KEY);
+  const cached   = localStorage.getItem(CACHE_KEY);
   const cachedTs = localStorage.getItem(CACHE_TS_KEY);
 
+  // 캐시가 있으면 일단 즉시 표시 (빠른 로딩)
   if(!forceRefresh && cached && cachedTs){
     try {
       facilities = JSON.parse(cached);
@@ -657,8 +657,38 @@ function loadFacilitiesFromSheet(forceRefresh=false){
       renderNoticeBanner();
       facilitiesLoaded = true;
       renderAll();
-      return;
     } catch(e){}
+
+    // 백그라운드에서 서버 lastUpdated 확인 → 더 최신이면 자동 갱신
+    fetch(SHEET_URL)
+      .then(r => r.json())
+      .then(res => {
+        const serverTs  = res.lastUpdated || '';
+        const localTs   = cachedTs || '';
+        // 서버가 더 최신이면 자동 갱신
+        if(serverTs && serverTs > localTs){
+          facilities = res.data
+            .filter(row => row['시설명'] || row['name'])
+            .map(row => parseSheetRow(row));
+          if(res.notice !== undefined){
+            noticeText = res.notice || '';
+            localStorage.setItem('gd_notice_cache', noticeText);
+            renderNoticeBanner();
+          }
+          if(res.releases !== undefined){
+            sheetReleases = res.releases || [];
+            localStorage.setItem('gd_releases_cache', JSON.stringify(sheetReleases));
+            renderAboutReleaseNotes();
+          }
+          localStorage.setItem(CACHE_KEY, JSON.stringify(facilities));
+          localStorage.setItem(CACHE_TS_KEY, serverTs);
+          localStorage.setItem('gd_last_server_ts', serverTs);
+          facilitiesLoaded = true;
+          renderAll();
+        }
+      })
+      .catch(()=>{}); // 백그라운드 오류는 무시 (캐시로 이미 표시 중)
+    return;
   }
 
   // 서버에서 새로 로드
@@ -807,10 +837,15 @@ function adminRefreshSheet(){
         localStorage.setItem('gd_releases_cache', JSON.stringify(sheetReleases));
         renderAboutReleaseNotes();
       }
+      // lastUpdated 시트에 기록 → 다른 기기들이 자동 감지
+      const serverTs = res.lastUpdated || new Date().toISOString();
       localStorage.setItem(CACHE_KEY, JSON.stringify(facilities));
-      const ts = new Date();
+      localStorage.setItem(CACHE_TS_KEY, serverTs);
+      localStorage.setItem('gd_last_server_ts', serverTs);
+      // 시트에도 업데이트 시각 기록
+      sheetPost({action:'updateTimestamp'}).catch(()=>{});
+      const ts = new Date(serverTs);
       const tsStr = `${ts.getFullYear()}.${String(ts.getMonth()+1).padStart(2,'0')}.${String(ts.getDate()).padStart(2,'0')} ${String(ts.getHours()).padStart(2,'0')}:${String(ts.getMinutes()).padStart(2,'0')}`;
-      localStorage.setItem(CACHE_TS_KEY, ts.toISOString());
       renderAll();
       renderTable();
       if(btn){ btn.disabled=false; btn.textContent='🔄 업데이트'; }
