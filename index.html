@@ -76,7 +76,7 @@ button,input,select,a{font-family:inherit;}
 
 /* 지역 칩 */
 .region-chip{position:absolute;top:10px;left:50%;transform:translateX(-50%);background:rgba(255,255,255,.95);border:1px solid var(--bdr);border-radius:20px;padding:7px 16px;font-size:12px;color:var(--tx2);z-index:500;white-space:nowrap;pointer-events:none;box-shadow:0 2px 8px rgba(0,0,0,.1);display:none;}
-.region-chip.on{background:var(--pl);color:var(--primary);border-color:#C4D4F8;font-weight:700;pointer-events:all;cursor:pointer;display:block;}
+.region-chip.on{background:var(--pl);color:var(--primary);border-color:#C4D4F8;font-weight:700;pointer-events:none;display:block;}
 /* 공지 배너 */
 .notice-bar{position:fixed;top:calc(var(--top-h) + var(--st) + 42px);left:50%;transform:translateX(-50%);background:rgba(255,248,225,.97);border:1px solid #FFD54F;border-radius:20px;padding:7px 18px;font-size:12px;color:#7B4F00;z-index:900;white-space:nowrap;box-shadow:0 2px 8px rgba(0,0,0,.1);max-width:88%;overflow:hidden;text-overflow:ellipsis;display:none;align-items:center;gap:6px;}
 .notice-bar.on{display:flex;}
@@ -130,7 +130,7 @@ button,input,select,a{font-family:inherit;}
 .filter-toggle-btn.has-filter{background:var(--pl);color:var(--primary);border-color:#C4D4F8;}
 .filter-arrow{font-size:10px;transition:transform .3s;}
 .filter-arrow.up{transform:rotate(180deg);}
-.filter-reset-btn{height:32px;padding:0 12px;background:none;border:1px solid var(--bdr);border-radius:20px;font-size:12px;color:var(--tx3);cursor:pointer;white-space:nowrap;}
+.filter-reset-btn{height:32px;padding:0 12px;background:none;border:1px solid var(--bdr);border-radius:20px;font-size:12px;font-weight:700;color:var(--primary);cursor:pointer;white-space:nowrap;}
 
 /* ─── 필터 드로어 ─── */
 .filter-drawer{
@@ -1144,9 +1144,11 @@ function renderAll(){
   // 지역 칩 (필터 선택 시만 표시)
   const chip=document.getElementById('region-chip');
   if(filters.region!=='all-region'){
-    chip.textContent=`📍 ${filters.region} — 탭해서 해제`;
+    chip.textContent=`📍 ${filters.region}`;
     chip.className='region-chip on';
-    chip.onclick=()=>setFilter('region','all-region');
+    chip.onclick=null;
+    chip.style.pointerEvents='none';
+    chip.style.cursor='default';
   } else {
     chip.className='region-chip';
     chip.onclick=null;
