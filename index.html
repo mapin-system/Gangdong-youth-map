@@ -633,12 +633,16 @@ const SHEET_URL = 'https://script.google.com/macros/s/AKfycbyxbJwnfYnyFrXyfQ6I8H
 const CACHE_KEY = 'gd_facilities_cache';
 const CACHE_TS_KEY = 'gd_facilities_ts';
 const CACHE_VER_KEY = 'gd_cache_ver';
-const CACHE_VER = '20260326'; // 코드 업데이트 시 이 값을 바꾸면 캐시 자동 초기화
+const CACHE_VER = '20261017'; // 코드 업데이트 시 이 값을 바꾸면 캐시 자동 초기화
 
-// 캐시 버전 체크 - 버전 다르면 캐시 삭제
+// 캐시 버전 체크 - 버전 다르면 캐시 전체 삭제
 if(localStorage.getItem(CACHE_VER_KEY) !== CACHE_VER){
   localStorage.removeItem(CACHE_KEY);
   localStorage.removeItem(CACHE_TS_KEY);
+  // 공지·업데이트내역·이벤트 캐시도 함께 삭제 (이전 데이터 잔존 방지)
+  localStorage.removeItem('gd_notice_cache');
+  localStorage.removeItem('gd_releases_cache');
+  localStorage.removeItem('gd_events_cache');
   localStorage.setItem(CACHE_VER_KEY, CACHE_VER);
 }
 
@@ -668,52 +672,63 @@ function loadFacilitiesFromSheet(forceRefresh=false){
   if(!forceRefresh && cached && cachedTs){
     try {
       facilities = JSON.parse(cached);
-      noticeText = localStorage.getItem('gd_notice_cache') || '';
       sheetReleases = JSON.parse(localStorage.getItem('gd_releases_cache') || '[]');
       sheetEvents = JSON.parse(localStorage.getItem('gd_events_cache') || '[]');
       sheetPwHash = localStorage.getItem('gd_pw_hash') || '';
+      // 공지는 캐시로 먼저 띄우지 않음 (이전 공지가 보였다 바뀌는 깜빡임 방지)
+      noticeText = '';
       renderNoticeBanner();
       facilitiesLoaded = true;
       renderAll();
     } catch(e){}
 
-    // 백그라운드에서 서버 lastUpdated 확인 → 더 최신이면 자동 갱신
+    // 백그라운드에서 서버 확인
     fetch(SHEET_URL)
       .then(r => r.json())
       .then(res => {
+        // 공지·업데이트내역·이벤트·비밀번호는 항상 최신으로 갱신
+        // (lastUpdated와 무관하게 — 시트만 수정해도 바로 반영되도록)
+        if(res.notice !== undefined){
+          noticeText = res.notice || '';
+          localStorage.setItem('gd_notice_cache', noticeText);
+          renderNoticeBanner();
+        }
+        if(res.releases !== undefined){
+          sheetReleases = res.releases || [];
+          localStorage.setItem('gd_releases_cache', JSON.stringify(sheetReleases));
+          renderAboutReleaseNotes();
+        }
+        if(res.events !== undefined){
+          sheetEvents = res.events || [];
+          localStorage.setItem('gd_events_cache', JSON.stringify(sheetEvents));
+        }
+        if(res.pwHash !== undefined){
+          sheetPwHash = res.pwHash || '';
+          localStorage.setItem('gd_pw_hash', sheetPwHash);
+        }
+
         const serverTs  = res.lastUpdated || '';
         const localTs   = cachedTs || '';
-        // 서버가 더 최신이면 자동 갱신
+        // 시설 데이터는 서버가 더 최신일 때만 갱신
         if(serverTs && serverTs > localTs){
           facilities = res.data
             .filter(row => row['시설명'] || row['name'])
             .map(row => parseSheetRow(row));
-          if(res.notice !== undefined){
-            noticeText = res.notice || '';
-            localStorage.setItem('gd_notice_cache', noticeText);
-            renderNoticeBanner();
-          }
-          if(res.releases !== undefined){
-            sheetReleases = res.releases || [];
-            localStorage.setItem('gd_releases_cache', JSON.stringify(sheetReleases));
-            renderAboutReleaseNotes();
-          }
-          if(res.events !== undefined){
-            sheetEvents = res.events || [];
-            localStorage.setItem('gd_events_cache', JSON.stringify(sheetEvents));
-          }
-          if(res.pwHash !== undefined){
-            sheetPwHash = res.pwHash || '';
-            localStorage.setItem('gd_pw_hash', sheetPwHash);
-          }
           localStorage.setItem(CACHE_KEY, JSON.stringify(facilities));
           localStorage.setItem(CACHE_TS_KEY, serverTs);
           localStorage.setItem('gd_last_server_ts', serverTs);
           facilitiesLoaded = true;
           renderAll();
+        } else {
+          // 시설은 그대로여도 이벤트 핀은 다시 그려야 함
+          renderAll();
         }
       })
-      .catch(()=>{}); // 백그라운드 오류는 무시 (캐시로 이미 표시 중)
+      .catch(()=>{
+        // 오프라인·통신 실패 시에만 캐시에 남은 공지로 폴백
+        noticeText = localStorage.getItem('gd_notice_cache') || '';
+        renderNoticeBanner();
+      });
     return;
   }
 
